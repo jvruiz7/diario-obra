@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#192136">
+<title>Diário de Obra — VentoSul</title>
+<link rel="icon" href="icone.png">
+<link rel="apple-touch-icon" href="icone.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;600&family=Spline+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* identidade VentoSul: Azul escuro #192136, Azul vibrante #2B7CDE, Laranja vibrante #E63B1E, Branco;
+     Anek Latin (títulos e destaques) e Spline Sans (textos) */
+  :root {
+    --bg: #F3F5F8; --card: #FFFFFF; --text: #192136; --muted: #5B6478; --line: #DCE1E8;
+    --accent: #2B7CDE; --accent-ink: #FFFFFF; --accent-text: #1F63B8; --accent-soft: #E3EEFB;
+    --orange: #E63B1E; --orange-text: #C2310F; --orange-soft: #FCE6E0;
+    --ok: #1E7B3C; --err: #B42318; --bar: #192136; --bar-text: #FFFFFF;
+    --font: "Spline Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --title: "Anek Latin", "Spline Sans", system-ui, sans-serif; --mono: var(--title);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0F1424; --card: #192136; --text: #EEF2F8; --muted: #A7B0C2; --line: #2E3A57;
+            --accent-text: #7DB3F2; --accent-soft: #1B3358; --orange-text: #FF7A5C; --orange-soft: #3D1F1A;
+            --ok: #4CC27A; --err: #F87171; --bar: #0B0F1C; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 400 16px/1.45 var(--font); }
+  header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bar); color: var(--bar-text);
+           border-bottom: 4px solid var(--orange); }
+  header .logo { height: 26px; width: auto; display: block; }
+  header .sep { width: 1px; height: 24px; background: #FFFFFF33; }
+  header b { font: 600 17px/1.1 var(--title); letter-spacing: .2px; white-space: nowrap; }
+  @media (max-width: 360px) { header .sep, header b { display: none; } }
+  header .who { margin-left: auto; font-size: 13px; opacity: .85; text-align: right; }
+  header button { background: none; border: 1px solid #F2F1EE55; color: var(--bar-text); border-radius: 6px; padding: 4px 8px; font-size: 12px; }
+  main { padding: 16px; max-width: 560px; margin: 0 auto; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+  h2 { margin: 0 0 4px; font: 600 24px/1.15 var(--title); }
+  .eyebrow { font: 600 12px/1.3 var(--mono); text-transform: uppercase; letter-spacing: 1px; color: var(--accent-text); }
+  .muted { color: var(--muted); font-size: 14px; }
+  label { display: block; font: 600 12px/1.3 var(--mono); text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 14px 0 6px; }
+  label.check { display: flex; align-items: center; gap: 8px; font: 400 15px var(--font); text-transform: none; letter-spacing: 0; color: var(--text); }
+  label.check input { width: 20px; height: 20px; accent-color: var(--accent); }
+  input, select, textarea { width: 100%; font: 400 17px/1.4 var(--font); padding: 12px; border-radius: 8px; border: 1px solid var(--line);
+                            background: var(--bg); color: var(--text); }
+  textarea { min-height: 110px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+  button { font-family: var(--font); cursor: pointer; }
+  button.big { width: 100%; font-size: 18px; font-weight: 700; padding: 15px; border-radius: 10px; border: 0;
+               background: var(--accent); color: var(--accent-ink); margin-top: 14px; }
+  button.big.alt { background: transparent; color: var(--text); border: 1px solid var(--line); font-weight: 500; }
+  button:disabled { opacity: .5; }
+  .msg { padding: 12px 14px; border-radius: 8px; margin-bottom: 14px; font-weight: 600; }
+  .msg.ok { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+  .msg.err { background: color-mix(in srgb, var(--err) 15%, transparent); color: var(--err); }
+  .msg.info { background: var(--accent-soft); color: var(--text); }
+  .hidden { display: none !important; }
+  .pending { font-size: 13px; color: var(--muted); text-align: center; margin-top: 8px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .seg button { padding: 11px 6px; border-radius: 8px; border: 2px solid var(--line); background: var(--card); color: var(--text); font-size: 15px; }
+  .seg button.on { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+  .lines .ln { display: grid; grid-template-columns: 1fr 74px 44px; gap: 8px; margin-bottom: 8px; }
+  .lines input { padding: 10px; font-size: 16px; }
+  .lines input[type=number] { text-align: center; font-family: var(--mono); }
+  .x { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 8px; font-size: 20px; }
+  button.add { border: 1px dashed var(--line); background: none; color: var(--accent-text); border-radius: 8px; padding: 11px;
+               width: 100%; font-weight: 700; font-size: 15px; }
+  .total { float: right; }
+  .photos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 8px; }
+  .photos figure { margin: 0; position: relative; }
+  .photos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; display: block; background: var(--bg); }
+  .photos input { margin-top: 4px; padding: 8px; font-size: 14px; }
+  .photos .x { position: absolute; top: 6px; right: 6px; width: 36px; height: 36px; background: rgba(15, 17, 20, .7); color: #fff; border: 0; }
+  .rdo { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .rdo:last-child { border-bottom: 0; }
+  .rdo .d { font: 600 16px/1.2 var(--mono); color: var(--text); min-width: 56px; text-align: center; }
+  .rdo .d small { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .rdo .t { flex: 1; font-size: 14px; min-width: 0; }
+  .tag { font: 600 10px/1 var(--mono); text-transform: uppercase; letter-spacing: 1px; padding: 5px 7px; border-radius: 5px;
+         background: var(--bg); color: var(--muted); white-space: nowrap; display: inline-block; }
+  .tag.aprovado { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+  .tag.devolvido { background: color-mix(in srgb, var(--err) 15%, transparent); color: var(--err); }
+  .tag.fila, .tag.enviado { background: var(--orange-soft); color: var(--orange-text); }
+  .note { border-left: 3px solid var(--orange); background: var(--orange-soft); padding: 10px 12px; border-radius: 0 8px 8px 0;
+          margin-top: 10px; font-size: 14px; }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  /* formulário em etapas */
+  #form.card { padding: 0; background: none; border: 0; }
+  #form > .eyebrow, #form > h2, #form > #fNote { padding: 0 2px; }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 16px; margin-top: 12px; }
+  .stephead { display: flex; align-items: center; gap: 10px; font: 600 19px/1.2 var(--title); }
+  .stephead .num { width: 26px; height: 26px; border-radius: 50%; background: var(--orange); color: #fff;
+                   display: grid; place-items: center; font: 700 13px var(--mono); flex: none; }
+  .stephead .total { margin-left: auto; font: 600 12px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .seg.wx button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; }
+  .seg.wx button .ic { font-size: 22px; line-height: 1; }
+  .seg button { min-height: 48px; }
+  .seg button.on.bad { border-color: var(--err); background: color-mix(in srgb, var(--err) 14%, transparent); }
+  /* linhas com quantidade: botões − e + grandes (fácil com luva) */
+  .lines .ln { grid-template-columns: 1fr 44px; grid-template-areas: "nome nome" "qtd x"; align-items: center;
+               padding-bottom: 10px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+  .lines .ln > input { grid-area: nome; }
+  .lines .ln .stepper { grid-area: qtd; justify-self: start; }
+  .lines .ln .x { grid-area: x; }
+  .stepper { display: grid; grid-template-columns: 48px 56px 48px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .stepper button { border: 0; background: var(--bg); color: var(--text); font-size: 22px; font-weight: 700; height: 44px; }
+  .stepper button:active { background: var(--accent-soft); }
+  .lines .stepper input { border: 0; border-radius: 0; padding: 0; height: 44px; text-align: center; font: 700 17px var(--mono);
+                          background: var(--card); -moz-appearance: textfield; }
+  .stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .lines .x { height: 44px; }
+  .photos .addtile { aspect-ratio: 4/3; border: 2px dashed var(--line); border-radius: 8px; background: none; color: var(--accent-text);
+                     font-weight: 700; font-size: 15px; display: grid; place-items: center; align-content: center; gap: 4px; }
+  .photos .addtile .ic { font-size: 28px; }
+  /* barra de ações sempre visível no rodapé */
+  .actions { position: sticky; bottom: 0; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; padding: 12px 0 14px;
+             margin-top: 6px; background: linear-gradient(to bottom, transparent, var(--bg) 22%); }
+  .actions .big { margin-top: 0; }
+  /* início: dia de hoje e situação da obra */
+  .today { margin-top: 16px; }
+  .today b { display: block; }
+  .today b { font: 600 21px/1.2 var(--title); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .stats div { background: var(--bg); border-radius: 8px; padding: 8px 10px; }
+  .stats b { display: block; font: 700 20px var(--mono); }
+  .stats span { display: block; font-size: 12px; line-height: 1.25; color: var(--muted); }
+  .rdo { border-left: 4px solid var(--line); padding-left: 10px; margin-left: -4px; }
+  .rdo.aprovado { border-left-color: var(--ok); }
+  .rdo.devolvido { border-left-color: var(--err); }
+  .rdo.enviado, .rdo.fila { border-left-color: var(--orange); }
+  h3.list { margin: 18px 0 2px; font: 600 12px/1.3 var(--mono); text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <img class="logo" src="logo.png" alt="VentoSul">
+  <span class="sep" aria-hidden="true"></span>
+  <b>Diário de Obra</b>
+  <div class="who" id="who"></div>
+</header>
+<main>
+  <div id="msg" class="msg hidden"></div>
+
+  <!-- login -->
+  <section id="login" class="card hidden">
+    <h2>Entrar</h2>
+    <p class="muted">Entre com o seu e-mail e senha. Só precisa entrar uma vez neste celular.</p>
+    <form id="loginForm">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="pass">Senha</label>
+      <input id="pass" type="password" autocomplete="current-password" required>
+      <label class="check"><input type="checkbox" data-show="pass"> Mostrar a senha</label>
+      <button class="big" type="submit">Entrar</button>
+    </form>
+    <button class="big alt" id="toSignup" type="button">Criar conta</button>
+  </section>
+
+  <!-- cadastro -->
+  <section id="signup" class="card hidden">
+    <h2>Criar conta</h2>
+    <p class="muted">Depois de criar, confirme o e-mail que vamos enviar e aguarde o escritório liberar o seu acesso.</p>
+    <form id="signupForm">
+      <label for="sNome">Nome</label>
+      <input id="sNome" autocomplete="name" required>
+      <label for="sFuncao">Sua função</label>
+      <input id="sFuncao" list="funcoesColab" placeholder="ex.: Encarregado Geral da Obra" autocomplete="organization-title" required>
+      <datalist id="funcoesColab"></datalist>
+      <label for="sEmail">E-mail</label>
+      <input id="sEmail" type="email" autocomplete="username" required>
+      <label for="sPass">Senha (mín. 8 caracteres)</label>
+      <input id="sPass" type="password" autocomplete="new-password" minlength="8" required>
+      <label for="sPass2">Repita a senha</label>
+      <input id="sPass2" type="password" autocomplete="new-password" minlength="8" required>
+      <label class="check"><input type="checkbox" data-show="sPass sPass2"> Mostrar a senha</label>
+      <button class="big" type="submit">Criar conta</button>
+    </form>
+    <button class="big alt" id="toLogin" type="button">Já tenho conta</button>
+  </section>
+
+  <!-- obra e dias registrados -->
+  <section id="home" class="card hidden">
+    <label for="obraSel" style="margin-top:0">Obra</label>
+    <select id="obraSel"></select>
+    <div class="today"><b id="hoje"></b><span class="muted" id="hojeInfo"></span></div>
+    <button class="big" id="newRdo" type="button">＋ Registrar o dia de hoje</button>
+    <button class="big alt" id="otherDay" type="button">📅 Registrar outro dia</button>
+    <div id="otherBox" class="hidden">
+      <label for="otherDate">Qual dia? (hoje ou um dia que ficou sem registro)</label>
+      <input id="otherDate" type="date">
+      <button class="big" id="otherGo" type="button">Abrir esse dia</button>
+    </div>
+    <div class="pending" id="rdoPending"></div>
+    <div class="stats" id="stats"></div>
+    <h3 class="list">Dias registrados</h3>
+    <div id="rdoList"></div>
+  </section>
+
+  <!-- registro do dia -->
+  <section id="form" class="card hidden">
+    <div class="eyebrow" id="fObra"></div>
+    <h2 id="fTitle">Registrar o dia</h2>
+    <div id="fNote"></div>
+    <fieldset id="fFields">
+      <div class="step">
+        <div class="stephead"><span class="num">1</span> Dia e local do trabalho</div>
+        <label for="fData">Data</label>
+        <input id="fData" type="date" required>
+        <label>Onde foi o trabalho? <span class="total">pode marcar os dois</span></label>
+        <div class="seg wx" id="fTipo"></div>
+        <div id="fClima">
+          <label>Tempo de manhã</label>
+          <div class="seg wx" id="fManha"></div>
+          <label>Tempo à tarde</label>
+          <div class="seg wx" id="fTarde"></div>
+          <label>Deu para trabalhar na área externa?</label>
+          <div class="seg" id="fCond"></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="stephead"><span class="num">2</span> Equipe <span class="total" id="fTotal"></span></div>
+        <div class="lines" id="fEfetivo"></div>
+        <button class="add" type="button" id="addEfetivo">＋ Adicionar função</button>
+        <label>Equipamentos</label>
+        <div class="lines" id="fEquip"></div>
+        <button class="add" type="button" id="addEquip">＋ Adicionar equipamento</button>
+      </div>
+      <div class="step">
+        <div class="stephead"><span class="num">3</span> Serviços</div>
+        <label for="fAtiv">Atividades executadas</label>
+        <textarea id="fAtiv" placeholder="O que foi feito hoje, onde (pavimento, eixo, ambiente) e quanto"></textarea>
+        <label for="fOcor">Ocorrências</label>
+        <textarea id="fOcor" placeholder="Atrasos, falta de material, interferências, acidentes. Deixe em branco se não houve."></textarea>
+      </div>
+      <div class="step">
+        <div class="stephead"><span class="num">4</span> Fotos <span class="total" id="fFotoN"></span></div>
+        <div class="photos" id="fFotos"></div>
+        <input id="fotoInput" type="file" accept="image/*" multiple class="hidden">
+      </div>
+    </fieldset>
+    <div class="actions">
+      <button class="big alt" id="backRdo" type="button">Voltar</button>
+      <button class="big" id="saveRdo" type="button">Enviar diário</button>
+    </div>
+    <datalist id="funcoes"></datalist>
+  </section>
+</main>
+
+<script>
+// Preenchido na publicação (veja o README) com o endereço do Supabase e a chave "anon" (que é pública).
+const SUPABASE_URL = "https://cbkxbrjmkpbioumrjjbg.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNia3hicmpta3BiaW91bXJqamJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNzczNzcsImV4cCI6MjEwODk1MzM3N30.Ryi6A-ypXE3f5bmVuOoC6cXIdglaD2fXCJKIjcJ_8fM";
+
+const CLIMAS = ["Bom", "Nublado", "Chuva leve", "Chuva forte"];
+const CONDICOES = ["Praticável", "Impraticável"];
+// tipo de trabalho do dia: "interno", "externo" ou "ambos" (em clima.tipo). Só o externo tem tempo e condição.
+// Dias antigos, sem tipo, contam como externos.
+const tipoDe = r => ((r && r.clima) || {}).tipo || (r && r.clima && r.clima.manha ? "externo" : "");
+const temExterno = t => t === "externo" || t === "ambos";
+const TIPO_TXT = { interno: "🏠 Interno", externo: "🏗️ Externo", ambos: "🏠 Interno + 🏗️ Externo" };
+const ICONES = { "Bom": "☀️", "Nublado": "☁️", "Chuva leve": "🌦️", "Chuva forte": "⛈️", "Praticável": "✅", "Impraticável": "⛔" };
+const FUNCOES = ["Encarregado", "Mestre de obras", "Oficial", "Meio-oficial", "Ajudante", "Pedreiro", "Carpinteiro",
+                 "Armador", "Eletricista", "Encanador", "Soldador", "Montador", "Técnico de segurança"];
+const STATUS = { enviado: "Aguardando conferência", aprovado: "Aprovado", devolvido: "Devolvido para correção" };
+const MAX_FOTOS = 12;
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+let session = store.get("rdo_session", null);
+let rdo = null;          // dia em edição
+let rows = [];           // dias da obra (do servidor)
+
+const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const today = () => new Date().toLocaleDateString("sv-SE");   // AAAA-MM-DD no fuso do celular
+const dataBr = d => d ? d.slice(8, 10) + "/" + d.slice(5, 7) : "";
+const diaSemana = d => ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][new Date(d + "T12:00").getDay()];
+function newId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = b[6] & 15 | 64; b[8] = b[8] & 63 | 128;
+  const h = [...b].map(x => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+function show(id, on) { $(id).classList.toggle("hidden", !on); }
+function message(text, kind = "info") {
+  const m = $("msg"); m.textContent = text; m.className = "msg " + kind; show("msg", !!text);
+  if (text) window.scrollTo({ top: 0, behavior: "smooth" });
+  if (kind === "ok" && navigator.vibrate) navigator.vibrate(80);
+}
+$("funcoes").innerHTML = FUNCOES.map(f => `<option value="${f}">`).join("");
+// função de quem usa a página (cadastro): sai nas assinaturas do relatório
+$("funcoesColab").innerHTML = ["Encarregado Geral da Obra", "Encarregado", "Mestre de obras", "Engenheiro Fiscal",
+  "Técnico de Segurança do Trabalho"].map(f => `<option value="${f}">`).join("");
+
+// ---------------------------------------------------------------- Supabase (REST, sem biblioteca)
+async function auth(body, grant) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=${grant}`, {
+    method: "POST", headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const code = String(data.error_code || data.error || "");
+    throw new Error(code.includes("not_confirmed") ? "Confirme o seu e-mail antes de entrar (abra o link que enviamos)."
+      : code.includes("invalid") || code.includes("credentials") ? "E-mail ou senha incorretos."
+      : r.status === 429 ? "Muitas tentativas. Aguarde alguns minutos." : `O servidor recusou (${r.status}).`);
+  }
+  const user = data.user || {}, app = user.app_metadata || {}, meta = user.user_metadata || {};
+  if (app.bloqueado) throw new Error("Usuário bloqueado. Fale com o escritório.");
+  if (!["admin", "escritorio", "obra"].includes(app.papel))
+    throw new Error("Seu cadastro ainda não foi liberado. Peça ao escritório para liberar o seu acesso.");
+  return { token: data.access_token, refresh: data.refresh_token, expires: Date.now() + (data.expires_in || 3600) * 1000,
+           email: user.email, nome: meta.nome || user.email, funcao: meta.funcao || "" };
+}
+
+async function token() {
+  if (!session) throw new Error("login");
+  if (Date.now() > session.expires - 60000) {
+    try { session = await auth({ refresh_token: session.refresh }, "refresh_token"); store.set("rdo_session", session); }
+    catch (e) { if (navigator.onLine && !(e instanceof TypeError)) { logout(); throw new Error("login"); } throw e; }
+  }
+  return session.token;
+}
+
+async function rest(path, opts = {}) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers: {
+    apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${await token()}`, "Content-Type": "application/json",
+    ...(opts.headers || {}) } });
+  if (r.status === 401) { logout(); message("Sua sessão expirou. Entre de novo.", "err"); throw new Error("login"); }
+  if (!r.ok) throw new Error(r.status === 403 ? "Seu usuário não tem permissão para isso (o dia pode já ter sido aprovado)."
+                                              : `Erro do servidor (${r.status}).`);
+  const raw = await r.text();
+  return raw ? JSON.parse(raw) : null;
+}
+const offline = e => !navigator.onLine || e instanceof TypeError;
+
+// ---------------------------------------------------------------- telas
+function renderWho() {
+  $("who").innerHTML = session ? `${esc(session.nome.split(" ")[0])}<br><button id="out">Sair</button>` : "";
+  if (session) $("out").onclick = () => {
+    if (store.get("rdo_fila", []).length && !confirm("Há diários ainda não enviados neste celular. Sair mesmo assim? Eles serão enviados quando você entrar de novo.")) return;
+    if (confirm("Sair deste celular?")) logout();
+  };
+}
+function logout() {
+  session = null; store.del("rdo_session"); renderWho(); rdo = null;
+  show("login", true); show("signup", false); show("home", false); show("form", false);
+}
+
+// ---------------------------------------------------------------- obras e dias
+const obraAtual = () => store.get("rdo_obras", []).find(o => o.id === $("obraSel").value);
+
+async function loadObras() {
+  try { store.set("rdo_obras", await rest("rdo_obras?ativa=eq.true&select=id,nome,cliente&order=nome.asc") || []); }
+  catch (e) { if (e.message === "login") return; }        // sem sinal: usa a lista guardada no celular
+  const obras = store.get("rdo_obras", []);
+  const sel = $("obraSel"), want = store.get("rdo_obra", "");
+  sel.innerHTML = obras.length ? obras.map(o => `<option value="${esc(o.id)}">${esc(o.nome)}${o.cliente ? " — " + esc(o.cliente) : ""}</option>`).join("")
+                               : `<option value="">Nenhuma obra liberada pelo escritório</option>`;
+  if (obras.some(o => o.id === want)) sel.value = want;
+  $("newRdo").disabled = $("otherDay").disabled = !obras.length;
+  const draft = store.get("rdo_rascunho", null);
+  if (draft && draft.email === session.email) {
+    message("Você tem um diário que não foi enviado. Ele foi aberto para você terminar.", "info");
+    return openForm(draft);
+  }
+  loadRdos();
+}
+$("obraSel").onchange = () => { store.set("rdo_obra", $("obraSel").value); loadRdos(); };
+
+async function loadRdos() {
+  const obra = $("obraSel").value;
+  renderPending();
+  if (!obra) { $("rdoList").innerHTML = ""; return; }
+  let note = "";
+  try {
+    rows = await rest(`rdo_diario?obra=eq.${encodeURIComponent(obra)}&order=data.desc&limit=40` +
+      "&select=id,obra,data,clima,efetivo,equipamentos,usuario,email,status,obs_escritorio") || [];
+  } catch (e) {
+    if (e.message === "login") return;
+    rows = [];
+    note = `<p class="muted">Sem internet: a lista dos dias aparece quando voltar o sinal. Você pode registrar o dia mesmo assim.</p>`;
+  }
+  const fila = store.get("rdo_fila", []).filter(r => r.obra === obra);
+  const all = [...fila.map(r => ({ ...r, fila: true })), ...rows.filter(r => !fila.some(f => f.id === r.id))]
+    .sort((a, b) => b.data.localeCompare(a.data));
+  $("rdoList").innerHTML = note + (all.length ? all.map(r => {
+    const n = (r.efetivo || []).reduce((s, e) => s + (+e.qtd || 0), 0);
+    const tag = r.fila ? `<span class="tag fila">no celular</span>` : `<span class="tag ${r.status}">${STATUS[r.status] || ""}</span>`;
+    return `<div class="rdo ${r.fila ? "fila" : r.status}" data-id="${esc(r.id)}"><div class="d">${dataBr(r.data)}<small>${diaSemana(r.data)}</small></div>` +
+      `<div class="t"><b>${esc(r.usuario || r.email)}</b><br><span class="muted">${n} pessoa(s) • ${temExterno(tipoDe(r)) ? esc((r.clima || {}).manha || "") + (tipoDe(r) === "ambos" ? " • interno e externo" : "") : "🏠 interno"}</span>` +
+      `<br>${tag}</div></div>`;
+  }).join("") : note ? "" : `<p class="muted">Nenhum dia registrado nesta obra ainda.</p>`);
+  $("rdoList").querySelectorAll(".rdo").forEach(el => el.onclick = () => openRdo(el.dataset.id));
+  renderToday(all);
+}
+
+function renderToday(all) {
+  const d = new Date();
+  const h = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" });
+  $("hoje").textContent = h.charAt(0).toUpperCase() + h.slice(1);
+  const mine = all.find(r => r.data === today() && (r.email === session.email || r.fila));
+  $("newRdo").textContent = mine ? "✎ Continuar o dia de hoje" : "＋ Registrar o dia de hoje";
+  $("hojeInfo").textContent = mine ? (mine.fila ? "guardado no celular" : RDO_LABEL(mine.status)) : "ainda não registrado";
+  const fromServer = all.filter(r => !r.fila);
+  $("stats").innerHTML = fromServer.length ? [
+    [fromServer.length, "dias registrados"],
+    [fromServer.filter(r => r.status === "enviado").length, "aguardando"],
+    [fromServer.filter(r => r.status === "devolvido").length, "para corrigir"]].map(([n, t]) => `<div><b>${n}</b><span>${t}</span></div>`).join("") : "";
+}
+const RDO_LABEL = st => (STATUS[st] || "").toLowerCase();
+
+async function openRdo(id) {
+  const q = store.get("rdo_fila", []).find(r => r.id === id);
+  if (q) return openForm(q);
+  try {
+    const r = await rest(`rdo_diario?id=eq.${id}&select=*`);
+    if (r && r[0]) openForm(r[0]);
+  } catch (e) { if (e.message !== "login") message(offline(e) ? "Sem internet para abrir este dia." : e.message, "err"); }
+}
+
+// registro desta pessoa nesta obra numa data (no servidor ou guardado no celular), para não duplicar o dia
+const meuDia = (obra, data, exceto) => [...store.get("rdo_fila", []), ...rows]
+  .find(r => r.obra === obra && r.data === data && r.email === session.email && r.id !== exceto);
+
+function openDay(data) {
+  const o = obraAtual(); if (!o) return;
+  if (!data) return message("Escolha a data.", "err");
+  if (data > today()) return message("Não dá para registrar um dia que ainda não aconteceu.", "err");
+  const mine = meuDia(o.id, data);
+  if (mine) {
+    message(`Você já registrou o dia ${dataBr(data)} nesta obra: abri o registro para você completar.`, "info");
+    return openRdo(mine.id);
+  }
+  const last = rows.find(r => r.data < data) || rows[0];  // equipe, equipamentos e local do dia anterior (o comum é repetir)
+  const tipo = tipoDe(last);
+  openForm({ id: newId(), obra: o.id, data,
+             clima: temExterno(tipo) ? { tipo, manha: "Bom", tarde: "Bom", condicao: "Praticável" } : { tipo },
+             efetivo: last && last.efetivo && last.efetivo.length ? last.efetivo.map(e => ({ ...e })) : [{ funcao: "", qtd: 1 }],
+             equipamentos: last && last.equipamentos ? last.equipamentos.map(e => ({ ...e })) : [],
+             atividades: "", ocorrencias: "", fotos: [], novo: true });
+}
+$("newRdo").onclick = () => openDay(today());
+$("otherDay").onclick = () => {
+  const box = $("otherBox"), open = box.classList.contains("hidden");
+  show("otherBox", open);
+  if (open) { $("otherDate").max = today(); $("otherDate").value = $("otherDate").value || today(); $("otherDate").focus(); }
+};
+$("otherGo").onclick = () => { show("otherBox", false); openDay($("otherDate").value); };
+
+// ---------------------------------------------------------------- registro do dia
+const editable = r => !r.status || (r.status !== "aprovado" && (!r.email || r.email === session.email));
+
+function openForm(r) {
+  rdo = { ...r, email: r.email || session.email, clima: { ...(r.clima || {}), tipo: tipoDe(r) },
+          efetivo: [...(r.efetivo || [])], equipamentos: [...(r.equipamentos || [])], fotos: [...(r.fotos || [])] };
+  const o = store.get("rdo_obras", []).find(x => x.id === rdo.obra);
+  $("fObra").textContent = o ? o.nome : "Obra";
+  $("fTitle").textContent = rdo.novo ? (rdo.data === today() ? "Registrar o dia de hoje" : `Registrar o dia ${dataBr(rdo.data)}`)
+                                     : `Dia ${dataBr(rdo.data)} — ${rdo.usuario || rdo.email}`;
+  const can = editable(rdo);
+  $("fNote").innerHTML = (rdo.status ? `<div class="tag ${rdo.status}" style="margin-top:8px">${STATUS[rdo.status]}</div>` : "") +
+    (rdo.obs_escritorio ? `<div class="note"><b>Escritório:</b> ${esc(rdo.obs_escritorio)}</div>` : "") +
+    (rdo.editado_por ? `<div class="note">✎ Corrigido pelo escritório: ${esc(rdo.editado_por)} em ` +
+                       `${new Date(rdo.editado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}</div>` : "") +
+    (!can ? `<div class="note">${rdo.status === "aprovado" ? "Este dia já foi aprovado pelo escritório e não pode mais ser alterado."
+                                                         : "Só quem registrou pode alterar este dia."}</div>` : "");
+  $("fFields").disabled = !can;
+  show("saveRdo", can); show("addEfetivo", can); show("addEquip", can);
+  $("backRdo").textContent = can ? "Voltar" : "← Voltar"; $("form").querySelector(".actions").style.gridTemplateColumns = can ? "" : "1fr";
+  $("saveRdo").textContent = rdo.status === "devolvido" ? "Reenviar corrigido" : rdo.novo ? "Enviar diário" : "Salvar alterações";
+  $("fData").value = rdo.data; $("fData").max = today();
+  $("fAtiv").value = rdo.atividades || ""; $("fOcor").value = rdo.ocorrencias || "";
+  renderForm();
+  show("home", false); show("form", true); window.scrollTo({ top: 0 });
+}
+
+function seg(box, options, key) {
+  $(box).innerHTML = options.map(v => `<button type="button" class="${rdo.clima[key] === v ? "on" : ""}${v === "Impraticável" ? " bad" : ""}">` +
+    `<span class="ic">${ICONES[v] || ""}</span>${v}</button>`).join("");
+  $(box).querySelectorAll("button").forEach((b, k) => b.onclick = () => { rdo.clima[key] = options[k]; renderForm(); draft(); });
+}
+
+function lines(box, list, field, placeholder, datalist) {
+  $(box).innerHTML = list.map((e, k) => `<div class="ln"><input data-k="${k}" data-f="${field}" value="${esc(e[field])}" ` +
+    `placeholder="${placeholder}" ${datalist ? `list="${datalist}"` : ""} aria-label="${placeholder}">` +
+    `<div class="stepper"><button type="button" data-k="${k}" data-d="-1" aria-label="Menos">−</button>` +
+    `<input data-k="${k}" data-f="qtd" type="number" min="0" inputmode="numeric" value="${e.qtd ?? ""}" aria-label="Quantidade">` +
+    `<button type="button" data-k="${k}" data-d="1" aria-label="Mais">+</button></div>` +
+    `<button type="button" class="x" data-k="${k}" aria-label="Remover">×</button></div>`).join("");
+  $(box).querySelectorAll("[data-d]").forEach(b => b.onclick = () => {
+    const e = list[+b.dataset.k]; e.qtd = Math.max(0, (+e.qtd || 0) + +b.dataset.d);
+    b.parentNode.querySelector("input").value = e.qtd; totals(); draft();
+  });
+  $(box).querySelectorAll("input").forEach(i => i.oninput = () => {
+    list[+i.dataset.k][i.dataset.f] = i.dataset.f === "qtd" ? (i.value === "" ? "" : +i.value) : i.value;
+    totals(); draft();
+  });
+  $(box).querySelectorAll(".x").forEach(b => b.onclick = () => { list.splice(+b.dataset.k, 1); renderForm(); draft(); });
+}
+
+function totals() {
+  $("fTotal").textContent = `${rdo.efetivo.reduce((s, e) => s + (+e.qtd || 0), 0)} pessoa(s)`;
+  $("fFotoN").textContent = `${rdo.fotos.length} de ${MAX_FOTOS}`;
+}
+
+function renderTipo() {
+  const t = rdo.clima.tipo || "";
+  const int = t === "interno" || t === "ambos", ext = temExterno(t);
+  $("fTipo").innerHTML = `<button type="button" data-t="interno" class="${int ? "on" : ""}"><span class="ic">🏠</span>Interno</button>` +
+                         `<button type="button" data-t="externo" class="${ext ? "on" : ""}"><span class="ic">🏗️</span>Externo</button>`;
+  $("fTipo").querySelectorAll("button").forEach(b => b.onclick = () => {
+    let i = int, e = ext;
+    if (b.dataset.t === "interno") i = !i; else e = !e;
+    rdo.clima.tipo = i && e ? "ambos" : i ? "interno" : e ? "externo" : "";
+    if (e && !rdo.clima.manha) Object.assign(rdo.clima, { manha: "Bom", tarde: "Bom", condicao: "Praticável" });
+    renderForm(); draft();
+  });
+  show("fClima", ext);
+}
+
+function renderForm() {
+  renderTipo();
+  seg("fManha", CLIMAS, "manha"); seg("fTarde", CLIMAS, "tarde"); seg("fCond", CONDICOES, "condicao");
+  lines("fEfetivo", rdo.efetivo, "funcao", "Função", "funcoes");
+  lines("fEquip", rdo.equipamentos, "nome", "Ex.: betoneira, andaime");
+  $("fFotos").innerHTML = rdo.fotos.map((f, k) => `<figure><img src="${f.img}" alt="Foto ${k + 1}">` +
+    `<button type="button" class="x" data-k="${k}" aria-label="Tirar a foto">×</button>` +
+    `<input data-k="${k}" value="${esc(f.legenda)}" placeholder="Legenda" aria-label="Legenda da foto ${k + 1}"></figure>`).join("") +
+    (editable(rdo) && rdo.fotos.length < MAX_FOTOS
+      ? `<button type="button" class="addtile" id="addFoto"><span class="ic">📷</span>Adicionar foto</button>` : "");
+  if ($("addFoto")) $("addFoto").onclick = addPhoto;
+  $("fFotos").querySelectorAll("input").forEach(i => i.oninput = () => { rdo.fotos[+i.dataset.k].legenda = i.value; draft(); });
+  $("fFotos").querySelectorAll(".x").forEach(b => b.onclick = () => {
+    if (confirm("Tirar esta foto do diário?")) { rdo.fotos.splice(+b.dataset.k, 1); renderForm(); draft(); }
+  });
+  totals();
+}
+
+// rascunho: nada se perde se a página fechar ou o celular desligar no meio
+function draft() {
+  if (!rdo || !editable(rdo)) return;
+  rdo.data = $("fData").value; rdo.atividades = $("fAtiv").value; rdo.ocorrencias = $("fOcor").value;
+  if (!store.set("rdo_rascunho", rdo)) message("A memória do celular para rascunhos está cheia: envie o diário assim que puder.", "err");
+}
+["fData", "fAtiv", "fOcor"].forEach(id => $(id).addEventListener("input", draft));
+$("fData").addEventListener("input", () => {   // o título acompanha a data escolhida
+  if (rdo && rdo.novo) $("fTitle").textContent = $("fData").value === today() ? "Registrar o dia de hoje"
+                                                 : `Registrar o dia ${dataBr($("fData").value)}`;
+});
+$("addEfetivo").onclick = () => { rdo.efetivo.push({ funcao: "", qtd: 1 }); renderForm(); draft();
+  $("fEfetivo").querySelector(".ln:last-child input").focus(); };
+$("addEquip").onclick = () => { rdo.equipamentos.push({ nome: "", qtd: 1 }); renderForm(); draft();
+  $("fEquip").querySelector(".ln:last-child input").focus(); };
+
+// fotos reduzidas no celular (lado maior 1280 px, JPEG) para enviar rápido mesmo com sinal fraco
+async function shrink(file) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, 1280 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", .7);
+}
+function addPhoto() {
+  if (rdo.fotos.length >= MAX_FOTOS) return message(`Máximo de ${MAX_FOTOS} fotos por dia.`, "err");
+  $("fotoInput").value = ""; $("fotoInput").click();
+}
+$("fotoInput").onchange = async () => {
+  for (const f of [...$("fotoInput").files].slice(0, MAX_FOTOS - rdo.fotos.length)) {
+    try { rdo.fotos.push({ img: await shrink(f), legenda: "" }); }
+    catch { message("Não consegui abrir uma das fotos.", "err"); }
+  }
+  renderForm(); draft();
+};
+
+function rowToSend() {
+  draft();
+  const clean = (list, f) => list.filter(e => String(e[f] ?? "").trim() && +e.qtd > 0).map(e => ({ [f]: String(e[f]).trim(), qtd: +e.qtd }));
+  const t = rdo.clima.tipo || "";   // trabalho só interno não leva tempo nem condição
+  const clima = temExterno(t) ? { tipo: t, manha: rdo.clima.manha, tarde: rdo.clima.tarde, condicao: rdo.clima.condicao }
+                              : { tipo: t };
+  return { id: rdo.id, obra: rdo.obra, data: rdo.data, clima, efetivo: clean(rdo.efetivo, "funcao"),
+           equipamentos: clean(rdo.equipamentos, "nome"), atividades: (rdo.atividades || "").trim(),
+           ocorrencias: (rdo.ocorrencias || "").trim(), fotos: rdo.fotos, usuario: rdo.usuario || session.nome,
+           usuario_funcao: rdo.usuario_funcao || session.funcao || null };
+}
+
+// grava pelo id (cria ou atualiza): reenviar o mesmo dia nunca duplica
+const post = row => rest("rdo_diario?on_conflict=id", { method: "POST", body: JSON.stringify(row),
+                                                         headers: { Prefer: "resolution=merge-duplicates,return=minimal" } });
+async function send(row) {
+  try { await post(row); }
+  catch (e) {   // servidor ainda sem a coluna da função (atualização 1.4 do banco): envia sem ela
+    if (!String(e.message).includes("(400)") || !("usuario_funcao" in row)) throw e;
+    const { usuario_funcao, ...rest } = row;
+    await post(rest);
+  }
+}
+
+$("saveRdo").onclick = async () => {
+  const row = rowToSend();
+  if (!row.data) return message("Escolha a data.", "err");
+  if (row.data > today()) return message("A data não pode ser depois de hoje.", "err");
+  if (meuDia(row.obra, row.data, row.id))
+    return message(`Você já tem um registro do dia ${dataBr(row.data)} nesta obra. Volte e abra esse dia na lista para completar.`, "err");
+  if (!row.clima.tipo) return message("Marque onde foi o trabalho: interno, externo ou os dois.", "err");
+  if (temExterno(row.clima.tipo) && !(row.clima.manha && row.clima.tarde && row.clima.condicao))
+    return message("Trabalho externo: informe o tempo de manhã, à tarde e se deu para trabalhar.", "err");
+  if (!row.efetivo.length) return message("Informe a mão de obra do dia (função e quantidade).", "err");
+  if (!row.atividades) { $("fAtiv").focus(); return message("Escreva as atividades executadas no dia.", "err"); }
+  $("saveRdo").disabled = true;
+  try {
+    await send(row);
+    message(`✔ Diário de ${dataBr(row.data)} enviado ao escritório.`, "ok");
+    closeForm();
+  } catch (e) {
+    if (e.message === "login") return;
+    if (offline(e)) {
+      const q = store.get("rdo_fila", []).filter(r => r.id !== row.id); q.push({ ...row, email: session.email });
+      if (!store.set("rdo_fila", q)) return message("Sem internet e sem espaço no celular: tire algumas fotos e tente de novo.", "err");
+      message(`Sem internet: o diário de ${dataBr(row.data)} ficou guardado no celular e será enviado quando voltar o sinal.`, "info");
+      return closeForm();
+    }
+    message(e.message, "err");
+  } finally { $("saveRdo").disabled = false; }
+};
+
+function closeForm() {
+  rdo = null; store.del("rdo_rascunho");
+  show("form", false); show("home", true); loadRdos();
+}
+$("backRdo").onclick = () => {
+  if (rdo && editable(rdo) && !confirm("Voltar sem enviar? O que você digitou fica guardado como rascunho.")) return;
+  if (rdo && !editable(rdo)) store.del("rdo_rascunho");
+  rdo = null; show("form", false); show("home", true); loadRdos();
+};
+
+// ---------------------------------------------------------------- dias guardados sem sinal (enviados depois)
+function renderPending() {
+  const n = store.get("rdo_fila", []).length;
+  $("rdoPending").textContent = n ? `${n} diário(s) aguardando internet` : "";
+}
+async function flush() {
+  if (!session) return;
+  let sent = 0;
+  for (const row of store.get("rdo_fila", [])) {
+    if (row.email !== session.email) continue;
+    try {
+      const { email, ...body } = row;
+      await send(body); sent++;
+      store.set("rdo_fila", store.get("rdo_fila", []).filter(r => r.id !== row.id));
+    } catch { break; }
+  }
+  if (sent) message(`${sent} diário(s) guardado(s) sem sinal foram enviados.`, "ok");
+  renderPending();
+  if (sent && !$("home").classList.contains("hidden")) loadRdos();
+}
+window.addEventListener("online", flush);
+
+// ---------------------------------------------------------------- início
+$("loginForm").onsubmit = async ev => {
+  ev.preventDefault();
+  const btn = ev.submitter; if (btn) btn.disabled = true;
+  try {
+    session = await auth({ email: $("email").value.trim(), password: $("pass").value }, "password");
+    store.set("rdo_session", session); $("pass").value = "";
+    start();
+  } catch (e) { message(e instanceof TypeError ? "Sem conexão com o servidor." : e.message, "err"); }
+  finally { if (btn) btn.disabled = false; }
+};
+document.querySelectorAll("[data-show]").forEach(cb => cb.onchange = () =>
+  cb.dataset.show.split(" ").forEach(id => $(id).type = cb.checked ? "text" : "password"));
+$("toSignup").onclick = () => { message(""); show("login", false); show("signup", true); $("sEmail").value = $("email").value; };
+$("toLogin").onclick = () => { message(""); show("signup", false); show("login", true); };
+$("signupForm").onsubmit = async ev => {
+  ev.preventDefault();
+  if ($("sPass").value !== $("sPass2").value) return message("As senhas não são iguais.", "err");
+  const btn = ev.submitter; if (btn) btn.disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: "POST", headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: $("sEmail").value.trim(), password: $("sPass").value, data: { nome: $("sNome").value.trim(), funcao: $("sFuncao").value.trim() } }) });
+    const data = await r.json().catch(() => ({}));
+    const text = String(data.error_code || data.msg || data.message || "").toLowerCase();
+    if (!r.ok) throw new Error(text.includes("already") || text.includes("exists") ? "Este e-mail já tem cadastro."
+      : text.includes("weak") || text.includes("password") ? "Senha fraca: use pelo menos 8 caracteres, com letras e números."
+      : r.status === 429 ? "Muitas tentativas. Aguarde alguns minutos." : `O servidor recusou (${r.status}).`);
+    const user = data.user || data;
+    if (Array.isArray(user.identities) && !user.identities.length) throw new Error("Este e-mail já tem cadastro.");
+    $("email").value = $("sEmail").value.trim(); $("sPass").value = $("sPass2").value = "";
+    show("signup", false); show("login", true);
+    message("Cadastro criado. Confirme o e-mail que enviamos e aguarde o escritório liberar o seu acesso.", "ok");
+  } catch (e) { message(e instanceof TypeError ? "Sem conexão com o servidor." : e.message, "err"); }
+  finally { if (btn) btn.disabled = false; }
+};
+
+function start() {
+  renderWho(); message("");
+  if (!session) { show("login", true); show("signup", false); show("home", false); show("form", false); return; }
+  show("login", false); show("signup", false); show("home", true);
+  flush(); loadObras();
+}
+
+if (SUPABASE_URL.startsWith("__")) {
+  message("A página ainda não foi configurada pelo escritório (falta o endereço do servidor).", "err");
+} else start();
+</script>
+</body>
+</html>
